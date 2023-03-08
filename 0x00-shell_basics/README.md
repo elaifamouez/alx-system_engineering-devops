@@ -1,3 +1,7 @@
+0x00 Shell Basics  
+
+Tasks
+
 0-current_working_directory A script that prints the absolute path name of the current working directory.
 
 1-listit A script that Display the contents list of your current directory.
@@ -31,5 +35,11 @@
 100-lets_move A script that moves all files beginning with an uppercase letter to the directory /tmp/u.
 
 101-clean_emacs A script deletes all files in the current working directory that end with the character ~.
+
+102-tree A script that  creates the directories welcome/, welcome/to/ and welcome/to/school in the current directory.
+
+103-commas A script that  lists all the files and directories of the current directory, separated by commas (,).
+
+school.mgc A file that can be used with the command file to detect School data files.
 
  
