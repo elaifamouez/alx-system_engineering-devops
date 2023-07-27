@@ -4,4 +4,6 @@
 
 0x02. Shell, I/O Redirections and filters -- Working with the shell, I/O Redirections and filters.
 
-0x03. Shell, init files, variables and expansions -- Working with the shell, variables and expansions. 
+0x03. Shell, init files, variables and expansions -- Working with the shell, variables and expansions.
+
+0x04. Loops, conditions and parsing -- Working with SSH key, Loops and Logs.
