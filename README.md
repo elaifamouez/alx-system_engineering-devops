@@ -11,3 +11,5 @@
 0x05. Processes and signals -- Working with Process and Signal.
 
 0x06. Regular expression -- Working with Regular expression using Ruby Language.
+
+0x09. Web infrastructure design -- Working with Network basics and server.
