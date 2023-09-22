@@ -13,3 +13,5 @@
 0x06. Regular expression -- Working with Regular expression using Ruby Language.
 
 0x09. Web infrastructure design -- Working with Network basics and server.
+
+0x0A. Configuration management -- Working with Puppets And Configurations File.
