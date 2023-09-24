@@ -15,3 +15,5 @@
 0x09. Web infrastructure design -- Working with Network basics and server.
 
 0x0A. Configuration management -- Working with Puppets And Configurations File.
+
+0x0B. SSH -- Working with SSH encryption and SSH config file.
