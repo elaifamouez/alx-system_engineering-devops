@@ -17,3 +17,5 @@
 0x0A. Configuration management -- Working with Puppets And Configurations File.
 
 0x0B. SSH -- Working with SSH encryption and SSH config file.
+
+0x0C. Web server -- Working with WebServer and Domains.
