@@ -19,3 +19,6 @@
 0x0B. SSH -- Working with SSH encryption and SSH config file.
 
 0x0C. Web server -- Working with WebServer and Domains.
+
+0x0D. Web stack debugging #0 -- Working with Docker.
+
