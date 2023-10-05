@@ -23,3 +23,5 @@
 0x0D. Web stack debugging #0 -- Working with Docker.
 
 0x0F. Load balancer -- Working with load-balancing and HAproxy.
+
+0x0E. Web stack debugging #1 -- Working with Nginx WebServer.
