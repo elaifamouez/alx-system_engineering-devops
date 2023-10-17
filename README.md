@@ -27,3 +27,5 @@
 0x0E. Web stack debugging #1 -- Working with Nginx WebServer.
 
 0x13. Firewall -- Working with FireWall and IPtables.
+
+0x14. MySQL -- Working with MySQL Server and DataBase.
