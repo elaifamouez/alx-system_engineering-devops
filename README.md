@@ -29,3 +29,5 @@
 0x13. Firewall -- Working with FireWall and IPtables.
 
 0x14. MySQL -- Working with MySQL Server and DataBase.
+
+0x12. Web stack debugging #2 --  fixing the web stack to a working state.
