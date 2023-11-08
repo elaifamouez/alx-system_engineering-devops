@@ -1,90 +1,87 @@
 #!/usr/bin/python3
-"""script for parsing web data from an api
-    DISCLAIMER: THIS PROBABLY SHOULDN'T BE DONE RECURSIVELY
-    but we had to for school :P
-"""
-import json
+'''A module containing functions for working with the Reddit API.
+'''
 import requests
-import sys
 
 
-def get_hot_posts(subreddit, hot_list=[]):
-    """api call to reddit to get the number of subscribers
-    """
-    base_url = 'https://www.reddit.com/r/{}/top.json'.format(
-        subreddit
+def sort_histogram(histogram={}):
+    '''Sorts and prints the given histogram.
+    '''
+    histogram = list(filter(lambda kv: kv[1], histogram))
+    histogram_dict = {}
+    for item in histogram:
+        if item[0] in histogram_dict:
+            histogram_dict[item[0]] += item[1]
+        else:
+            histogram_dict[item[0]] = item[1]
+    histogram = list(histogram_dict.items())
+    histogram.sort(
+        key=lambda kv: kv[0],
+        reverse=False
     )
-    headers = {
-        'User-Agent':
-        'Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.2.3) \
-        Gecko/20100401 Firefox/3.6.3 (FM Scene 4.6.1)'
+    histogram.sort(
+        key=lambda kv: kv[1],
+        reverse=True
+    )
+    res_str = '\n'.join(list(map(
+        lambda kv: '{}: {}'.format(kv[0], kv[1]),
+        histogram
+    )))
+    if res_str:
+        print(res_str)
+
+
+def count_words(subreddit, word_list, histogram=[], n=0, after=None):
+    '''Counts the number of times each word in a given wordlist
+    occurs in a given subreddit.
+    '''
+    api_headers = {
+        'Accept': 'application/json',
+        'User-Agent': ' '.join([
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'AppleWebKit/537.36 (KHTML, like Gecko)',
+            'Chrome/97.0.4692.71',
+            'Safari/537.36',
+            'Edg/97.0.1072.62'
+        ])
     }
-    if len(hot_list) == 0:
-        # grab initial list
-        url = base_url
-    else:
-        # grab next pagination after last obj in hot_list
-        url = base_url + '?after={}_{}'.format(
-            hot_list[-1].get('kind'),
-            hot_list[-1].get('data').get('id')
-        )
-    response = requests.get(url, headers=headers)
-    resp = json.loads(response.text)
-    try:
-        data = resp.get('data')
-        children = data.get('children')
-    except:
-        return None
-    if children is None or data is None or len(children) < 1:
-        return hot_list
-    hot_list.extend(children)
-    return get_hot_posts(subreddit, hot_list)
-
-
-def count_words(subreddit, wordlist):
-    """count words in titles of hot posts for subreddit
-    """
-    posts = get_hot_posts(subreddit)
-    if posts is None:
-        print(end="")
-        return
-    words = gather_word_info(posts, wordlist)
-    sorted_list = [(key, val) for key, val in words.items()]
-    sorted_list = sorted(sorted_list, key=lambda tup: tup[1], reverse=True)
-    [print("{}: {}".format(key, val)) for (key, val) in sorted_list if val > 0]
-
-
-def gather_word_info(hot_posts, wordlist,
-                     posts_len=None,
-                     counter=0,
-                     words_info=None):
-    """does the recursion to grab word info from wordlist and posts
-    """
-    if hot_posts is None:
-        return
-    # generate defaults
-    if posts_len is None:
-        posts_len = len(hot_posts)
-    if words_info is None:
-        words_info = {key: 0 for key in wordlist}
-    # base case
-    if counter == posts_len - 1:
-        return words_info
-
-    # parse this title and move to next
-    data = hot_posts[counter].get('data')
-    if data is None:
-        return words_info
-    title = data.get('title')
-    if title is None:
-        return words_info
-    # im sorry im not doing recursion for text parsing that's rediculous
-    for word in title.split(' '):
-        word = word.lower()
-        if word in wordlist:
-            words_info[word] += 1
-    counter += 1
-    return gather_word_info(
-        hot_posts, wordlist, posts_len,
-        counter, words_info
+    sort = 'hot'
+    limit = 30
+    res = requests.get(
+        '{}/r/{}/.json?sort={}&limit={}&count={}&after={}'.format(
+            'https://www.reddit.com',
+            subreddit,
+            sort,
+            limit,
+            n,
+            after if after else ''
+        ),
+        headers=api_headers,
+        allow_redirects=False
     )
+    if not histogram:
+        word_list = list(map(lambda word: word.lower(), word_list))
+        histogram = list(map(lambda word: (word, 0), word_list))
+    if res.status_code == 200:
+        data = res.json()['data']
+        posts = data['children']
+        titles = list(map(lambda post: post['data']['title'], posts))
+        histogram = list(map(
+            lambda kv: (kv[0], kv[1] + sum(list(map(
+                lambda txt: txt.lower().split().count(kv[0]),
+                titles
+            )))),
+            histogram
+        ))
+        if len(posts) >= limit and data['after']:
+            count_words(
+                subreddit,
+                word_list,
+                histogram,
+                n + len(posts),
+                data['after']
+            )
+        else:
+            sort_histogram(histogram)
+    else:
+        return
