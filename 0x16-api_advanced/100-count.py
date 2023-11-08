@@ -1,63 +1,95 @@
 #!/usr/bin/python3
-""" Module for storing the count_words function. """
-from requests import get
+""" querry reddit api for subreddit info
+"""
+import requests
+import requests.auth
+import string
+from time import sleep
 
 
-def count_words(subreddit, word_list, word_count=[], page_after=None):
+def authenticate():
+    """ authenticate function
+    doesnt take parameters returns token_type and access_token
     """
-    Prints the count of the given words present in the title of the
-    subreddit's hottest articles.
+    usr_name = "jgadelugo"
+    temp = "HolbertonPass845"
+
+    secret = "Z4Sa9bA6RRE44qDyhHQiTlW1gd0"
+    client_id = "hy4KvoK0W2iDvw"
+
+    client_auth = requests.auth.HTTPBasicAuth(client_id, secret)
+    post_data = {"grant_type": "password",
+                 "username": usr_name,
+                 "password": temp}
+
+    headers = {"User-Agent": "ChangeMeClient/0.1 by {}".format(usr_name)}
+    response = requests.post("https://www.reddit.com/api/v1/access_token",
+                             auth=client_auth, data=post_data, headers=headers)
+    auth_json = response.json()
+
+    token_type = auth_json['token_type']
+    access_token = auth_json['access_token']
+
+    return (token_type, access_token)
+
+
+def recurse(subreddit, hot_list=[], after=[], t_type=None, a_token=None):
+    """ querry reddit api for hot post
+    recursively get all hot post from subreddit
     """
-    headers = {'User-Agent': 'HolbertonSchool'}
+    sub = subreddit
+    subreddit = "/r/{}/hot".format(sub)
+    usr_name = "jgadelugo"
 
-    word_list = [word.lower() for word in word_list]
+    if len(after) == 0:
+        t_type, a_token = authenticate()
 
-    if bool(word_count) is False:
-        for word in word_list:
-            word_count.append(0)
-
-    if page_after is None:
-        url = 'https://www.reddit.com/r/{}/hot.json'.format(subreddit)
-        r = get(url, headers=headers, allow_redirects=False)
-        if r.status_code == 200:
-            for child in r.json()['data']['children']:
-                i = 0
-                for i in range(len(word_list)):
-                    for word in [w for w in child['data']['title'].split()]:
-                        word = word.lower()
-                        if word_list[i] == word:
-                            word_count[i] += 1
-                    i += 1
-
-            if r.json()['data']['after'] is not None:
-                count_words(subreddit, word_list,
-                            word_count, r.json()['data']['after'])
+    headers = {"Authorization": "{} {}".format(t_type, a_token),
+               "User-Agent": "ChangeMeClient/0.1 by {}".format(usr_name)}
+    if len(after) != 0:
+        param = {"limit": 100, "after": after[-1]}
     else:
-        url = ('https://www.reddit.com/r/{}/hot.json?after={}'
-               .format(subreddit,
-                       page_after))
-        r = get(url, headers=headers, allow_redirects=False)
+        param = {"limit": 100}
 
-        if r.status_code == 200:
-            for child in r.json()['data']['children']:
-                i = 0
-                for i in range(len(word_list)):
-                    for word in [w for w in child['data']['title'].split()]:
-                        word = word.lower()
-                        if word_list[i] == word:
-                            word_count[i] += 1
-                    i += 1
-            if r.json()['data']['after'] is not None:
-                count_words(subreddit, word_list,
-                            word_count, r.json()['data']['after'])
-            else:
-                dicto = {}
-                for key_word in list(set(word_list)):
-                    i = word_list.index(key_word)
-                    if word_count[i] != 0:
-                        dicto[word_list[i]] = (word_count[i] *
-                                               word_list.count(word_list[i]))
+    sleep(1)
+    query = "https://oauth.reddit.com{}".format(subreddit)
+    res = requests.get(query, headers=headers, params=param)
 
-                for key, value in sorted(dicto.items(),
-                                         key=lambda x: (-x[1], x[0])):
-                    print('{}: {}'.format(key, value))
+    status = res.status_code
+
+    if (status != 200):
+        return None
+    else:
+        data = res.json()
+        if data['data']['after'] in after:
+            return hot_list
+        after.append(data['data']['after'])
+        posts = data["data"]['children']
+        for post in posts:
+            hot_list.append(post['data']['title'])
+
+        return recurse(sub, hot_list, after, t_type, a_token)
+
+
+def count_words(subreddit, word_list):
+    """ count words """
+    flag = 0
+    words = {}
+    for word in word_list:
+        words[word] = 0
+    hot_list = recurse(subreddit)
+    if hot_list is None:
+        return
+    for hot in hot_list:
+        hot.translate(str.maketrans('', '', string.punctuation))
+        for h in hot.lower().split():
+            for word in word_list:
+                if h.lower() == word.lower():
+                    words[word] += 1
+    sorted_words = sorted(words.items(), key=lambda x: (-x[1], x[0]))
+    for key, value in sorted_words:
+        if value != 0:
+            print("{}: {}".format(key, value))
+            flag = 1
+    if flag == 0:
+        print()
