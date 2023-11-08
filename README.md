@@ -32,4 +32,6 @@
 
 0x12. Web stack debugging #2 --  fixing the web stack to a working state.
 
-0x15. API -- Working With REST API And Microservice. 
+0x15. API -- Working With REST API And Microservice.
+
+0x16. API advanced -- Work with API and Query String. 
